@@ -4,7 +4,7 @@
 #
 
 import psycopg2
-
+import bleach
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
@@ -13,11 +13,40 @@ def connect():
 
 def deleteMatches():
     """Remove all the match records from the database."""
+    # Generic database start
+    conn = connect()
+    c = conn.cursor()
+
+    # --  Main programm
+
+        # Kick the matches'results, then...
+    c.query("DELETE FROM Results")
+        # ... the matches themselves
+    c.query("DELETE FROM Matches")
+    
+
+    # Generic database closing
+    conn.commit()
+    conn.close()
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
 
+    # Generic database start
+    conn = connect()
+    c = conn.cursor()
+
+    # --  Main programm
+
+        # Kick the tournaments' player
+
+    c.query("DELETE FROM player")
+   
+
+    # Generic database closing
+    conn.commit()
+    conn.close()
 
 def countPlayers():
     """Returns the number of players currently registered."""
