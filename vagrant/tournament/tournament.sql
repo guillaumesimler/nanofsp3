@@ -6,28 +6,38 @@
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
 
+-- Create the database
+DROP DATABASE tournament;
+
+CREATE DATABASE tournament;
 
 -- Tables: please look at the readme and the xls file
-CREATE TABLE Register_player (Playerid serial primary key, Playername text, starting_tournament integer);
+CREATE TABLE Register_player (Playername text, starting_tournament integer, Playerid serial PRIMARY KEY);
 
-CREATE TABLE Tournaments (tournamentid serial primary key, tournamentname text);
+CREATE TABLE Tournaments (tournamentid serial PRIMARY KEY, tournamentname text);
 
 CREATE TABLE Player (tournament integer REFERENCES Tournaments(tournamentid), 
 					Playerid integer REFERENCES Register_player);
 
-CREATE TABLE Matches (Matchid serial primary key, 
-					  Player1 integer REFERENCES Player(Playerid), 
-					  Player2 integer REFERENCES Player(Playerid), 
-					  Roundnumber integer
+CREATE TABLE Matches (Matchid serial PRIMARY KEY, 
+					  Player1 integer, 
+					  Player2 integer, 
+					  Roundnumber integer,
 					  tournamentid integer REFERENCES Tournaments(tournamentid));
 
 
 CREATE TABLE Results (Matchid integer REFERENCES Matches(Matchid),
-					  Winnerid integer REFERENCES Player(Playerid),
-					  Loserid integer REFERENCES Player(Playerid));
+					  Winnerid integer,
+					  Loserid integer);
 
 -- Views
+	-- Return the current Tournament level
+CREATE VIEW CurrentTournament AS SELECT max(tournamentid) as Latest from Tournaments;
 
+	-- Return the last value
+CREATE VIEW LastPlayerid AS SELECT max(Playerid) as Playerid from Register_player;
+
+	-- Return the number of registered Player
 CREATE VIEW CountPlayer AS SELECT count(*) as Numb FROM Player; 
 
 	-- Return the players' standings 

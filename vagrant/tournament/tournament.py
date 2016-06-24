@@ -20,9 +20,9 @@ def deleteMatches():
     # --  Main programm
 
         # Kick the matches'results, then...
-    c.query("DELETE FROM Results")
+    c.query("DELETE * FROM Results")
         # ... the matches themselves
-    c.query("DELETE FROM Matches")
+    c.query("DELETE * FROM Matches")
     
 
     # Generic database closing
@@ -51,17 +51,65 @@ def deletePlayers():
 def countPlayers():
     """Returns the number of players currently registered."""
 
+    # Generic database start
+    conn = connect()
+    c = conn.cursor()
 
-def registerPlayer(name):
+    # --  Main programm
+
+        # Kick the tournaments' player
+
+    count = c.query("SELECT * FROM Leadtable")
+   
+
+    # Generic database closing
+    conn.commit()
+    conn.close()
+
+    # Return the value
+    return count
+
+
+def registerPlayer(name, newPlayer = False, oldPlayerid = ''):
     """Adds a player to the tournament database.
   
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
-  
+    
+    !!! Deviation to fit multiple tournaments and inherited player name!!!
     Args:
       name: the player's full name (need not be unique).
+      !!Deviation!!
+      newPlayer (Boolean, per default False) 
     """
+    
+    # Generic database start
+    conn = connect()
+    c = conn.cursor()
 
+    # --  Main programm
+        # -- First get the match id
+
+    tournament = c.query("SELECT * FROM CurrentTournament")
+    
+    print tournament
+
+    if newPlayer:
+        # -- create: 
+        # -- 1. a new Player 
+
+        c.query("INSERT INTO Register_player %s, %s" %(name, tournament, ))
+
+        # -- 2. a new player in the tournament
+
+        playerid = c.query("SELECT * FROM LastPlayerid")
+        
+        c.query("INSERT INTO PLayer %s, %s" %(tournament, playerid, ))
+
+
+    # Generic database closing
+    conn.commit()
+    conn.close()
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
@@ -77,6 +125,20 @@ def playerStandings():
         matches: the number of matches the player has played
     """
 
+    # Generic database start
+    conn = connect()
+    c = conn.cursor()
+
+    # --  Main programm
+
+    standings = c.query("SELECT * FROM Leadtable")
+   
+    # Generic database closing
+    conn.commit()
+    conn.close()
+
+    # Return the value
+    return standings
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -85,7 +147,7 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
- 
+    print 'Hello'
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
@@ -102,5 +164,6 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    print 'Hello AGAIN'
 
 
