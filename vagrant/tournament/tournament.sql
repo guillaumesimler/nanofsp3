@@ -6,24 +6,22 @@
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
 
--- Create the database
-DROP DATABASE tournament;
-
-CREATE DATABASE tournament;
-
 -- Tables: please look at the readme and the xls file
-CREATE TABLE Register_player (Playername text, starting_tournament integer, Playerid serial PRIMARY KEY);
+CREATE TABLE Register_player (Playername text, 
+							  starting_tournament integer, 
+							  Playerid serial PRIMARY KEY);
 
-CREATE TABLE Tournaments (tournamentid serial PRIMARY KEY, tournamentname text);
+CREATE TABLE Tournaments (tournamentname text, 
+						  tournamentid serial PRIMARY KEY);
 
 CREATE TABLE Player (tournament integer REFERENCES Tournaments(tournamentid), 
 					Playerid integer REFERENCES Register_player);
 
-CREATE TABLE Matches (Matchid serial PRIMARY KEY, 
-					  Player1 integer, 
+CREATE TABLE Matches (Player1 integer, 
 					  Player2 integer, 
 					  Roundnumber integer,
-					  tournamentid integer REFERENCES Tournaments(tournamentid));
+					  tournamentid integer REFERENCES Tournaments(tournamentid),
+					  Matchid serial PRIMARY KEY);
 
 
 CREATE TABLE Results (Matchid integer REFERENCES Matches(Matchid),
@@ -43,5 +41,6 @@ CREATE VIEW CountPlayer AS SELECT count(*) as Numb FROM Player;
 	-- Return the players' standings 
 CREATE VIEW Leadtable AS SELECT Register_player.Playerid as id, Register_player.Playername 
 	as name, count(*) as matches, count(Results.Matchid) as wins
-	FROM Register_player RIGHT JOIN Results ON Register_player.Playername = Results.Winnerid
-	GROUP BY Results.Winnerid ORDER BY Win;
+	FROM Register_player RIGHT JOIN Results ON Register_player.Playerid=Results.Winnerid
+	GROUP BY Register_player.Playerid ORDER BY wins;
+

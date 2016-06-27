@@ -16,13 +16,12 @@ def deleteMatches():
     # Generic database start
     conn = connect()
     c = conn.cursor()
-
     # --  Main programm
 
         # Kick the matches'results, then...
-    c.query("DELETE * FROM Results")
+    c.execute("DELETE FROM Results;")
         # ... the matches themselves
-    c.query("DELETE * FROM Matches")
+    c.execute("DELETE FROM matches;")
     
 
     # Generic database closing
@@ -41,7 +40,7 @@ def deletePlayers():
 
         # Kick the tournaments' player
 
-    c.query("DELETE FROM player")
+    t = c.execute("DELETE FROM player")
    
 
     # Generic database closing
@@ -59,18 +58,22 @@ def countPlayers():
 
         # Kick the tournaments' player
 
-    count = c.query("SELECT * FROM Leadtable")
-   
+    query = "SELECT * FROM CountPlayer;"
+
+    c.execute(query)
+    result = c.fetchall()
+
 
     # Generic database closing
-    conn.commit()
     conn.close()
 
+    result = result[0][0]
+
     # Return the value
-    return count
+    return result
 
 
-def registerPlayer(name, newPlayer = False, oldPlayerid = ''):
+def registerPlayer(name, newPlayer = True, oldPlayerid = ''):
     """Adds a player to the tournament database.
   
     The database assigns a unique serial id number for the player.  (This
@@ -80,7 +83,7 @@ def registerPlayer(name, newPlayer = False, oldPlayerid = ''):
     Args:
       name: the player's full name (need not be unique).
       !!Deviation!!
-      newPlayer (Boolean, per default False) 
+      newPlayer (Boolean, per default True) 
     """
     
     # Generic database start
@@ -90,22 +93,27 @@ def registerPlayer(name, newPlayer = False, oldPlayerid = ''):
     # --  Main programm
         # -- First get the match id
 
-    tournament = c.query("SELECT * FROM CurrentTournament")
-    
-    print tournament
+    c.execute("SELECT * FROM CurrentTournament;")
+    tournament =  c.fetchall()[0][0]
 
     if newPlayer:
         # -- create: 
         # -- 1. a new Player 
 
-        c.query("INSERT INTO Register_player %s, %s" %(name, tournament, ))
+        query = "INSERT INTO Register_player (Playername, starting_tournament) VALUES ('%s', %s)" %(name, tournament, )
+
+        c.execute(query)
 
         # -- 2. a new player in the tournament
 
-        playerid = c.query("SELECT * FROM LastPlayerid")
-        
-        c.query("INSERT INTO PLayer %s, %s" %(tournament, playerid, ))
+        c.execute("SELECT * FROM LastPlayerid")
 
+        playerid = c.fetchall()[0][0] 
+
+    else:
+        playerid = oldPlayerid
+
+    c.execute("INSERT INTO PLayer (tournament, Playerid) VALUES ('%s', %s)" %(tournament, playerid, ))
 
     # Generic database closing
     conn.commit()
@@ -131,7 +139,7 @@ def playerStandings():
 
     # --  Main programm
 
-    standings = c.query("SELECT * FROM Leadtable")
+    standings = c.execute("SELECT * FROM Leadtable")
    
     # Generic database closing
     conn.commit()
@@ -167,3 +175,36 @@ def swissPairings():
     print 'Hello AGAIN'
 
 
+def displayPlayer():
+    """Adds a player to the tournament database.
+  
+    The database assigns a unique serial id number for the player.  (This
+    should be handled by your SQL database schema, not in your Python code.)
+    
+    !!! Deviation to fit multiple tournaments and inherited player name!!!
+    Args:
+      name: the player's full name (need not be unique).
+      !!Deviation!!
+      newPlayer (Boolean, per default False) 
+    """
+    
+    # Generic database start
+    conn = connect()
+    c = conn.cursor()
+
+    # --  Main programm
+        # -- First get the match id
+
+    c.execute("SELECT * FROM Player;")
+    tournament =  c.fetchall()
+
+    print tournament
+
+    
+    # Generic database closing
+    conn.commit()
+    conn.close()
+
+registerPlayer('Heinrich')
+registerPlayer('Gargamel', False, 1)
+displayPlayer()
