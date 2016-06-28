@@ -38,9 +38,19 @@ CREATE VIEW LastPlayerid AS SELECT max(Playerid) as Playerid from Register_playe
 	-- Return the number of registered Player
 CREATE VIEW CountPlayer AS SELECT count(*) as Numb FROM Player; 
 
-	-- Return the players' standings 
-CREATE VIEW Leadtable AS SELECT Register_player.Playerid as id, Register_player.Playername 
-	as name, count(*) as matches, count(Results.Matchid) as wins
-	FROM Register_player RIGHT JOIN Results ON Register_player.Playerid=Results.Winnerid
-	GROUP BY Register_player.Playerid ORDER BY wins;
+	-- Return the number of registered Player
+CREATE VIEW DisplayPlayer AS SELECT Player.playerid as playerid, 
+									Register_player.Playername as playername,
+									Player.tournament as tournamentid 
+						     FROM Player, Register_player 
+						     WHERE player.playerid = Register_player.playerid; 
 
+	-- Return the players' standings 
+CREATE VIEW Leadtable AS SELECT DisplayPlayer.Playerid as id, 
+								DisplayPlayer.Playername as name,
+								count(Results.Matchid) as wins,
+								count(Results.Loserid) + count (Results.Winnerid) as matches
+								FROM DisplayPlayer LEFT JOIN Results 
+								ON DisplayPlayer.Playerid = Results.Winnerid
+								GROUP BY DisplayPlayer.Playerid, DisplayPlayer.Playername
+								ORDER BY wins;

@@ -139,8 +139,12 @@ def playerStandings():
 
     # --  Main programm
 
-    standings = c.execute("SELECT * FROM Leadtable")
-   
+    c.execute("SELECT * FROM Leadtable")
+    standings = c.fetchall()
+
+    for standing in standings:
+        print standing
+
     # Generic database closing
     conn.commit()
     conn.close()
@@ -195,8 +199,8 @@ def displayPlayer():
     # --  Main programm
         # -- First get the match id
 
-    c.execute("SELECT * FROM Player;")
-    tournament =  c.fetchall()
+    c.execute("SELECT * FROM DisplayPlayer;")
+    tournament =  c.fetchall()[0]
 
     print tournament
 
@@ -205,6 +209,8 @@ def displayPlayer():
     conn.commit()
     conn.close()
 
-registerPlayer('Heinrich')
-registerPlayer('Gargamel', False, 1)
-displayPlayer()
+# registerPlayer('Heinrich')
+# registerPlayer('Gargamel', False, 1)
+# displayPlayer()
+
+playerStandings()
