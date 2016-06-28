@@ -91,10 +91,16 @@ def registerPlayer(name, newPlayer = True, oldPlayerid = ''):
     c = conn.cursor()
 
     # --  Main programm
-        # -- First get the match id
+
+    name = name.replace("'", "''")
+    
+        # -- get the match id
 
     c.execute("SELECT * FROM CurrentTournament;")
     tournament =  c.fetchall()[0][0]
+
+
+
 
     if newPlayer:
         # -- create: 
