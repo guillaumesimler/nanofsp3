@@ -94,13 +94,9 @@ def registerPlayer(name, newPlayer = True, oldPlayerid = ''):
 
     name = name.replace("'", "''")
     
-        # -- get the match id
+        # -- get the tournament id
 
-    c.execute("SELECT * FROM CurrentTournament;")
-    tournament =  c.fetchall()[0][0]
-
-
-
+    tournament = getCurrentTournament(c)
 
     if newPlayer:
         # -- create: 
@@ -148,15 +144,25 @@ def playerStandings():
     c.execute("SELECT * FROM Leadtable")
     standings = c.fetchall()
 
+    result = []
+
     for standing in standings:
-        print standing
+        if standing[2] == None:
+            standing = list(standing)
+          
+            standing[2] = 0
+            print standing
+
+            standing = tuple(standing)
+
+            result.append(standing)
 
     # Generic database closing
     conn.commit()
     conn.close()
 
     # Return the value
-    return standings
+    return result
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -165,7 +171,30 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    print 'Hello'
+
+    createPairing(winner, loser, 3)
+
+    # Generic database start
+    conn = connect()
+    c = conn.cursor()
+
+    # --  Main programm
+
+    matchid = getMatchID(c, winner, loser)
+
+    # first insert the winner
+    query = 'INSERT INTO RESULTS values (%s, %s, 1)' %(matchid, winner, )
+    c.execute(query)
+    # first insert the loser
+    query = 'INSERT INTO RESULTS values (%s, %s, 0)' %(matchid, loser, )
+    c.execute(query)
+
+    # Generic database closing
+    conn.commit()
+    conn.close()
+
+    # Finish Report
+    print 'Match between players %s and %s successfully reported !' %(winner, loser)
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
@@ -185,35 +214,44 @@ def swissPairings():
     print 'Hello AGAIN'
 
 
-def displayPlayer():
-    """Adds a player to the tournament database.
-  
-    The database assigns a unique serial id number for the player.  (This
-    should be handled by your SQL database schema, not in your Python code.)
-    
-    !!! Deviation to fit multiple tournaments and inherited player name!!!
-    Args:
-      name: the player's full name (need not be unique).
-      !!Deviation!!
-      newPlayer (Boolean, per default False) 
-    """
-    
+
+# Guillaume's own formula
+
+def createPairing(winner, loser, roundnb):
+    """ Create a game pairing""" 
+
     # Generic database start
     conn = connect()
     c = conn.cursor()
 
+    tournament = getCurrentTournament(c)
     # --  Main programm
-        # -- First get the match id
 
-    c.execute("SELECT * FROM DisplayPlayer;")
-    tournament =  c.fetchall()[0]
+    query = 'INSERT INTO Matches values (%s, %s, %s, %s)' %(winner, loser, roundnb, tournament, )
+    c.execute(query)
 
-    print tournament
-
-    
     # Generic database closing
     conn.commit()
     conn.close()
+
+def getMatchID(c, winner, loser):
+
+    query = 'SELECT Matchid FROM Matches where ((player1 = %s) and (player2 = %s)) \
+             or ((player1 = %s) and (player2 = %s))' %(winner, loser, loser, winner, )
+
+    c.execute(query)
+
+    matchid = c.fetchall()[0][0]
+
+    return matchid
+
+
+def getCurrentTournament(c):
+    c.execute("SELECT * FROM CurrentTournament;")
+    tournament =  c.fetchall()[0][0]
+
+    return tournament
+
 
 # registerPlayer('Heinrich')
 # registerPlayer('Gargamel', False, 1)

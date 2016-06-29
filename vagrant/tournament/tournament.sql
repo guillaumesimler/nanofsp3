@@ -25,8 +25,8 @@ CREATE TABLE Matches (Player1 integer,
 
 
 CREATE TABLE Results (Matchid integer REFERENCES Matches(Matchid),
-					  Winnerid integer,
-					  Loserid integer);
+					  Playerid integer,
+					  Score integer);
 
 -- Views
 	-- Return the current Tournament level
@@ -48,9 +48,15 @@ CREATE VIEW DisplayPlayer AS SELECT Player.playerid as playerid,
 	-- Return the players' standings 
 CREATE VIEW Leadtable AS SELECT DisplayPlayer.Playerid as id, 
 								DisplayPlayer.Playername as name,
-								count(Results.Matchid) as wins,
-								count(Results.Loserid) + count (Results.Winnerid) as matches
+								sum(Results.Score) as wins,
+								count(Results.Score) as matches
 								FROM DisplayPlayer LEFT JOIN Results 
-								ON DisplayPlayer.Playerid = Results.Winnerid
+								ON DisplayPlayer.Playerid = Results.Playerid
 								GROUP BY DisplayPlayer.Playerid, DisplayPlayer.Playername
 								ORDER BY wins;
+
+
+-- Fill the tournament DB
+
+INSERT INTO Tournaments VALUES ('Queen''s own');
+INSERT INTO Tournaments VALUES ('Schuertzenjaegerturnier');
