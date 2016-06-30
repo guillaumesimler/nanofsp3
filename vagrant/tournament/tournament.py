@@ -19,14 +19,19 @@ def deleteMatches():
     # --  Main programm
 
         # Kick the matches'results, then...
-    c.execute("DELETE FROM Results;")
+    c.execute("DELETE FROM results")
         # ... the matches themselves
-    c.execute("DELETE FROM matches;")
+    c.execute("DELETE FROM matches")
     
 
     # Generic database closing
     conn.commit()
     conn.close()
+
+    # Finish Report
+    print 'Status: '
+    print 'All match records are deleted'
+    print
 
 
 def deletePlayers():
@@ -47,6 +52,10 @@ def deletePlayers():
     conn.commit()
     conn.close()
 
+    # Finish Report
+    print 'Status: '
+    print 'All players are deleted'
+
 def countPlayers():
     """Returns the number of players currently registered."""
 
@@ -58,7 +67,7 @@ def countPlayers():
 
         # Kick the tournaments' player
 
-    query = "SELECT * FROM CountPlayer;"
+    query = "SELECT * FROM countplayer;"
 
     c.execute(query)
     result = c.fetchall()
@@ -69,8 +78,14 @@ def countPlayers():
 
     result = result[0][0]
 
+    # Finish Report
+    print 'Status: '
+    print 'The players were counted.'
+
     # Return the value
     return result
+
+
 
 
 def registerPlayer(name, newPlayer = True, oldPlayerid = ''):
@@ -92,6 +107,8 @@ def registerPlayer(name, newPlayer = True, oldPlayerid = ''):
 
     # --  Main programm
 
+        # -- enable the use of apostrophe
+
     name = name.replace("'", "''")
     
         # -- get the tournament id
@@ -102,7 +119,8 @@ def registerPlayer(name, newPlayer = True, oldPlayerid = ''):
         # -- create: 
         # -- 1. a new Player 
 
-        query = "INSERT INTO Register_player (Playername, starting_tournament) VALUES ('%s', %s)" %(name, tournament, )
+        query = "INSERT INTO Register_player (Playername, starting_tournament) \
+                VALUES ('%s', %s)" %(name, tournament, )
 
         c.execute(query)
 
@@ -113,13 +131,20 @@ def registerPlayer(name, newPlayer = True, oldPlayerid = ''):
         playerid = c.fetchall()[0][0] 
 
     else:
+        # in case of an existing player, simply take its value
         playerid = oldPlayerid
 
-    c.execute("INSERT INTO PLayer (tournament, Playerid) VALUES ('%s', %s)" %(tournament, playerid, ))
+    c.execute("INSERT INTO PLayer (tournament, Playerid) \
+               VALUES ('%s', %s)" %(tournament, playerid, ))
 
     # Generic database closing
     conn.commit()
     conn.close()
+
+    # Finish Report
+    print 'Status: '
+    print 'Player %s (%s) successfully registered !' %(name, playerid)
+
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
@@ -144,6 +169,12 @@ def playerStandings():
     c.execute("SELECT * FROM Leadtable")
     standings = c.fetchall()
 
+        # This function is rebuild 'standings', especially when 
+        # there is no matches.
+        #
+        # The DB would return a 'None' value for the wins which would 
+        # fail in the tests 
+
     result = []
 
     for standing in standings:
@@ -155,11 +186,15 @@ def playerStandings():
 
             standing = tuple(standing)
 
-            result.append(standing)
+        result.append(standing)
 
     # Generic database closing
     conn.commit()
     conn.close()
+
+    # Finish Report
+    print 'Status: '
+    print 'Standing edited !'
 
     # Return the value
     return result
@@ -194,8 +229,10 @@ def reportMatch(winner, loser):
     conn.close()
 
     # Finish Report
+    print 'Status: '
     print 'Match between players %s and %s successfully reported !' %(winner, loser)
- 
+
+
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
   
@@ -211,14 +248,52 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-    print 'Hello AGAIN'
+
+    # 1. get the player field
+    field = playerStandings()
+
+    conn = connect()
+    c = conn.cursor()
+
+    roundnb = getCurrentRound(c) + 1
+
+    conn.commit()
+    conn.close()
+    
+    #2. get the pairs
+
+    result = []
+
+    i = 0
+    
+    while i < len(field):
+        # create the game 
+        pair1 = list(field[i])
+        pair2 = list(field[i + 1])
+
+        # create the pair to report
+
+        pair = (pair2[0], pair2[0], pair1[0], pair1[0])
+        result.append(pair)
+
+        # create the match
+
+        createPairing(pair1[0], pair2[0], roundnb)
+
+        i = i + 2
+
+       
+
+
+    return result
 
 
 
-# Guillaume's own formula
+
+# Guillaume's own methods
 
 def createPairing(winner, loser, roundnb):
-    """ Create a game pairing""" 
+    """ Creates a game pairing""" 
 
     # Generic database start
     conn = connect()
@@ -227,7 +302,9 @@ def createPairing(winner, loser, roundnb):
     tournament = getCurrentTournament(c)
     # --  Main programm
 
-    query = 'INSERT INTO Matches values (%s, %s, %s, %s)' %(winner, loser, roundnb, tournament, )
+    query = 'INSERT INTO Matches values (%s, %s, %s, %s)' \
+             %(winner, loser, roundnb, tournament, )
+    
     c.execute(query)
 
     # Generic database closing
@@ -235,6 +312,7 @@ def createPairing(winner, loser, roundnb):
     conn.close()
 
 def getMatchID(c, winner, loser):
+    """ Returns the current Tournament ID"""
 
     query = 'SELECT Matchid FROM Matches where ((player1 = %s) and (player2 = %s)) \
              or ((player1 = %s) and (player2 = %s))' %(winner, loser, loser, winner, )
@@ -247,10 +325,27 @@ def getMatchID(c, winner, loser):
 
 
 def getCurrentTournament(c):
+    """ Returns the current Tournament ID"""
     c.execute("SELECT * FROM CurrentTournament;")
     tournament =  c.fetchall()[0][0]
 
     return tournament
+
+def getCurrentRound(c):
+    """ Returns the current round number """
+    
+    query = 'SELECT max(Roundnumber) FROM Matches'
+    c.execute(query)
+
+    roundnb = c.fetchall()[0][0]
+
+    # in the starting face the query should return 'None'
+    if not roundnb: 
+        roundnb = 0
+
+
+    return roundnb
+
 
 
 # registerPlayer('Heinrich')
