@@ -31,8 +31,7 @@ def deleteMatches():
     # Finish Report
     print 'Status: '
     print 'All match records are deleted'
-    print
-
+  
 
 def deletePlayers():
     """Remove all the player records from the database."""
@@ -182,8 +181,6 @@ def playerStandings():
             standing = list(standing)
           
             standing[2] = 0
-            print standing
-
             standing = tuple(standing)
 
         result.append(standing)
