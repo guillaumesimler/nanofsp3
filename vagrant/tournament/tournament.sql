@@ -53,7 +53,7 @@ CREATE VIEW Leadtable AS SELECT DisplayPlayer.Playerid as id,
 								FROM DisplayPlayer LEFT JOIN Results 
 								ON DisplayPlayer.Playerid = Results.Playerid
 								GROUP BY DisplayPlayer.Playerid, DisplayPlayer.Playername
-								ORDER BY wins;
+								ORDER BY wins DESC;
 
 
 -- Fill the tournament DB

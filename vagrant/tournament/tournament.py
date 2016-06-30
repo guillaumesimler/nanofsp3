@@ -4,7 +4,7 @@
 #
 
 import psycopg2
-import bleach
+import math
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
@@ -252,6 +252,8 @@ def swissPairings():
     # 1. get the player field
     field = playerStandings()
 
+    
+    # Check the round numbers
     conn = connect()
     c = conn.cursor()
 
@@ -260,32 +262,39 @@ def swissPairings():
     conn.commit()
     conn.close()
     
-    #2. get the pairs
-
-    result = []
-
-    i = 0
-    
-    while i < len(field):
-        # create the game 
-        pair1 = list(field[i])
-        pair2 = list(field[i + 1])
-
-        # create the pair to report
-
-        pair = (pair2[0], pair2[0], pair1[0], pair1[0])
-        result.append(pair)
-
-        # create the match
-
-        createPairing(pair1[0], pair2[0], roundnb)
-
-        i = i + 2
-
-       
+    maxround = getMaxRound(field)
 
 
-    return result
+    #3. get the pairs
+
+    if roundnb <= maxround:
+
+        result = []
+
+        i = 0
+        
+        while i < len(field):
+            # create the game 
+            pair1 = list(field[i])
+            pair2 = list(field[i + 1])
+
+            # create the pair to report
+
+            pair = (pair2[0], pair2[0], pair1[0], pair1[0])
+            result.append(pair)
+
+            # create the match
+
+            createPairing(pair1[0], pair2[0], roundnb)
+
+            i = i + 2
+         
+        return result
+
+    else:
+        print 'The tournament is OVER !!'
+        print 'Hail the players in the following order '
+        print field
 
 
 
@@ -334,7 +343,7 @@ def getCurrentTournament(c):
 def getCurrentRound(c):
     """ Returns the current round number """
     
-    query = 'SELECT max(Roundnumber) FROM Matches'
+    query = 'SELECT max(matches) FROM Leadtable'
     c.execute(query)
 
     roundnb = c.fetchall()[0][0]
@@ -347,9 +356,9 @@ def getCurrentRound(c):
     return roundnb
 
 
+def getMaxRound(field):
+    """Get the maximal number of rounds """
+    maxround = math.log( len(field), 2)
+    
+    return maxround
 
-# registerPlayer('Heinrich')
-# registerPlayer('Gargamel', False, 1)
-# displayPlayer()
-
-playerStandings()
