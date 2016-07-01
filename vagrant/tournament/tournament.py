@@ -117,9 +117,10 @@ def registerPlayer(name, newPlayer=True, oldPlayerid=''):
         # -- 1. a new Player
 
         query = "INSERT INTO Register_player (Playername, starting_tournament) \
-                VALUES ('%s', %s)" % (name, tournament, )
+                VALUES (%s, %s)" 
+        values = (name, tournament, )
 
-        c.execute(query)
+        c.execute(query, values)
 
         # -- 2. a new player in the tournament
 
@@ -131,8 +132,12 @@ def registerPlayer(name, newPlayer=True, oldPlayerid=''):
         # in case of an existing player, simply take its value
         playerid = oldPlayerid
 
-    c.execute("INSERT INTO PLayer (tournament, Playerid) \
-               VALUES ('%s', %s)" % (tournament, playerid, ))
+
+    query = "INSERT INTO PLayer (tournament, Playerid) \
+               VALUES (%s, %s)"
+    values = (tournament, playerid, )
+
+    c.execute(query, values)
 
     # Generic database closing
     conn.commit()
@@ -213,12 +218,17 @@ def reportMatch(winner, loser):
 
     matchid = getMatchID(c, winner, loser)
 
+
     # first insert the winner
-    query = 'INSERT INTO RESULTS values (%s, %s, 1)' % (matchid, winner, )
-    c.execute(query)
+    query = 'INSERT INTO RESULTS values (%s, %s, 1)' 
+    values = (matchid, winner, )
+    c.execute(query, values)
+
     # first insert the loser
-    query = 'INSERT INTO RESULTS values (%s, %s, 0)' % (matchid, loser, )
-    c.execute(query)
+    query = 'INSERT INTO RESULTS values (%s, %s, 0)' 
+    values = (matchid, loser, )
+    
+    c.execute(query, values)
 
     # Generic database closing
     conn.commit()
@@ -304,10 +314,12 @@ def createPairing(winner, loser, roundnb):
     tournament = getCurrentTournament(c)
     # --  Main programm
 
-    query = 'INSERT INTO Matches values (%s, %s, %s, %s)' \
-        % (winner, loser, roundnb, tournament, )
 
-    c.execute(query)
+
+    query = 'INSERT INTO Matches values (%s, %s, %s, %s)'
+    values = (winner, loser, roundnb, tournament, )
+
+    c.execute(query, values)
 
     # Generic database closing
     conn.commit()
@@ -318,9 +330,10 @@ def getMatchID(c, winner, loser):
     """ Returns the current Tournament ID"""
 
     query = 'SELECT Matchid FROM Matches where ((player1 = %s) and (player2 = %s)) \
-             or ((player1 = %s) and (player2 = %s))' % (winner, loser, loser, winner, )
+             or ((player1 = %s) and (player2 = %s))'
+    values = (winner, loser, loser, winner, )
 
-    c.execute(query)
+    c.execute(query, values)
 
     matchid = c.fetchall()[0][0]
 
