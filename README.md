@@ -52,12 +52,16 @@ How to use
 1. Clone the [Repo](https://github.com/guillaumesimler/nanofsp3)
 2. Set up your [vagrant machine and make sure to have a virtual machine](https://udacity.atlassian.net/wiki/display/BENDH/Vagrant+VM+Installation)
 3. Once installed, use your terminal or git bash window to "cd" to the /vagrant/tournament
-4. Run PSQL and **create the database** (CREATE DATABASE tournament;)
-5. Select the database (__\c tournament__) and import the SQL File (\i tournament)
-6. Run the test program: python tournament_test.sql
+4. Run PSQL and **create the database** by typing
 
+```shell
+	psql -f tournament.sql
+```
 
-
+5. Run the test program by typing
+```shell
+	python tournament_test.py
+```
 Repository
 ----
 * the [working project](https://github.com/guillaumesimler/nanofsp3)

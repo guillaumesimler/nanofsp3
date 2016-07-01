@@ -6,6 +6,19 @@
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
 
+
+-- Initialize and select the Database
+--
+-- Thanks to reviewer n1 for the 
+--  * IF EXIST Statement
+--  * the simple \c tournament (to select the database, an element I missed so I kicked the 
+--    two first lines from an previous not reviewed version)
+
+DROP DATABASE IF EXISTS tournament;
+CREATE DATABASE tournament;
+\c tournament;
+
+
 -- Tables: please look at the readme and the xls file
 CREATE TABLE Register_player (Playername text,
 							  starting_tournament integer,
@@ -17,8 +30,14 @@ CREATE TABLE Tournaments (tournamentname text,
 CREATE TABLE Player (tournament integer REFERENCES Tournaments(tournamentid),
 					Playerid integer REFERENCES Register_player);
 
-CREATE TABLE Matches (Player1 integer,
-					  Player2 integer,
+
+-- Thanks to reviewer n1 for the correction:
+--    I was aware that Player1 and 2 (now winner and loser) were foreign key
+--    I thought it was more logical to put on Player. Yet PSQL did not like the 
+--    foreign key on a foreign key.
+
+CREATE TABLE Matches (Player1 integer REFERENCES Register_player(Playerid),
+					  Player2 integer REFERENCES Register_player(Playerid),
 					  Roundnumber integer,
 					  tournamentid integer REFERENCES Tournaments(tournamentid),
 					  Matchid serial PRIMARY KEY);

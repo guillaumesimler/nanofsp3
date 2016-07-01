@@ -95,6 +95,7 @@ def registerPlayer(name, newPlayer=True, oldPlayerid=''):
       name: the player's full name (need not be unique).
       !!Deviation!!
       newPlayer (Boolean, per default True)
+      oldPlayerid being the id of an already registered Player
     """
 
     # Generic database start
@@ -274,7 +275,7 @@ def swissPairings():
 
             # create the pair to report
 
-            pair = (pair2[0], pair2[0], pair1[0], pair1[0])
+            pair = (pair2[0], pair2[1], pair1[0], pair1[1])
             result.append(pair)
 
             # create the match
