@@ -69,12 +69,10 @@ def countPlayers():
     query = "SELECT * FROM countplayer;"
 
     c.execute(query)
-    result = c.fetchall()
+    result = c.fetchone()[0]
 
     # Generic database closing
     conn.close()
-
-    result = result[0][0]
 
     # Finish Report
     print 'Status: '
@@ -126,7 +124,7 @@ def registerPlayer(name, newPlayer=True, oldPlayerid=''):
 
         c.execute("SELECT * FROM LastPlayerid")
 
-        playerid = c.fetchall()[0][0]
+        playerid = c.fetchone()[0]
 
     else:
         # in case of an existing player, simply take its value
@@ -335,7 +333,7 @@ def getMatchID(c, winner, loser):
 
     c.execute(query, values)
 
-    matchid = c.fetchall()[0][0]
+    matchid = c.fetchone()[0]
 
     return matchid
 
@@ -343,7 +341,7 @@ def getMatchID(c, winner, loser):
 def getCurrentTournament(c):
     """ Returns the current Tournament ID"""
     c.execute("SELECT * FROM CurrentTournament;")
-    tournament = c.fetchall()[0][0]
+    tournament = c.fetchone()[0]
 
     return tournament
 
@@ -354,7 +352,7 @@ def getCurrentRound(c):
     query = 'SELECT max(matches) FROM Leadtable'
     c.execute(query)
 
-    roundnb = c.fetchall()[0][0]
+    roundnb = c.fetchone()[0]
 
     # in the starting face the query should return 'None'
     if not roundnb:
