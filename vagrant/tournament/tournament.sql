@@ -36,16 +36,11 @@ CREATE TABLE Player (tournament integer REFERENCES Tournaments(tournamentid),
 --    I thought it was more logical to put on Player. Yet PSQL did not like the 
 --    foreign key on a foreign key.
 
-CREATE TABLE Matches (Player1 integer REFERENCES Register_player(Playerid),
-					  Player2 integer REFERENCES Register_player(Playerid),
-					  Roundnumber integer,
+CREATE TABLE Matches (winner integer REFERENCES Register_player(Playerid),
+					  loser integer REFERENCES Register_player(Playerid),
 					  tournamentid integer REFERENCES Tournaments(tournamentid),
+					  tied boolean,
 					  Matchid serial PRIMARY KEY);
-
-
-CREATE TABLE Results (Matchid integer REFERENCES Matches(Matchid),
-					  Playerid integer,
-					  Score integer);
 
 -- Views
 	-- Return the current Tournament level
@@ -65,15 +60,19 @@ CREATE VIEW DisplayPlayer AS SELECT Player.playerid as playerid,
 						     WHERE player.playerid = Register_player.playerid;
 
 	-- Return the players' standings
-CREATE VIEW Leadtable AS SELECT DisplayPlayer.Playerid as id,
-								DisplayPlayer.Playername as name,
-								sum(Results.Score) as wins,
-								count(Results.Score) as matches
-								FROM DisplayPlayer LEFT JOIN Results
-								ON DisplayPlayer.Playerid = Results.Playerid
-								GROUP BY DisplayPlayer.Playerid, DisplayPlayer.Playername
-								ORDER BY wins DESC;
 
+CREATE VIEW Leadtable AS SELECT DisplayPlayer.playerid as playerid,
+							    DisplayPlayer.playername as playername,
+							    -- Subquery n°1
+							    (SELECT count(*) FROM matches 
+							     WHERE DisplayPlayer.playerid = matches.winner) as wins,
+							    -- Subquery n"2
+							    (SELECT count(*) FROM matches 
+							     WHERE DisplayPlayer.playerid = matches.winner OR
+							            DisplayPlayer.playerid = matches.loser) as matches
+							    FROM DisplayPlayer LEFT JOIN Matches on
+							    (DisplayPlayer.playerid = matches.winner or DisplayPlayer.playerid = matches.loser)
+						        ORDER BY wins DESC;
 
 -- Fill the tournament DB (enabling the start)
 

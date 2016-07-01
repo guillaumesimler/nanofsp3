@@ -19,9 +19,7 @@ def deleteMatches():
     c = conn.cursor()
     # --  Main programm
 
-    # Kick the matches'results, then...
-    c.execute("DELETE FROM results")
-    # ... the matches themselves
+    # Kick the matches themselves
     c.execute("DELETE FROM matches")
 
     # Generic database closing
@@ -178,11 +176,15 @@ def playerStandings():
     result = []
 
     for standing in standings:
-        if standing[2] == None:
-            standing = list(standing)
+        standing = list(standing)
 
+        if standing[2] == None:         
             standing[2] = 0
-            standing = tuple(standing)
+
+        if standing[3] == None:         
+            standing[3] = 0
+
+        standing = tuple(standing)
 
         result.append(standing)
 
@@ -198,7 +200,7 @@ def playerStandings():
     return result
 
 
-def reportMatch(winner, loser):
+def reportMatch(winner, loser, tied = False):
     """Records the outcome of a single match between two players.
 
     Args:
@@ -206,26 +208,15 @@ def reportMatch(winner, loser):
       loser:  the id number of the player who lost
     """
 
-    createPairing(winner, loser, 3)
-
     # Generic database start
     conn = connect()
     c = conn.cursor()
 
     # --  Main programm
+    tournament = getCurrentTournament(c)
 
-    matchid = getMatchID(c, winner, loser)
-
-
-    # first insert the winner
-    query = 'INSERT INTO RESULTS values (%s, %s, 1)' 
-    values = (matchid, winner, )
-    c.execute(query, values)
-
-    # first insert the loser
-    query = 'INSERT INTO RESULTS values (%s, %s, 0)' 
-    values = (matchid, loser, )
-    
+    query = 'INSERT INTO Matches values (%s, %s, %s, %s)' 
+    values = (winner, loser, tournament, tied, )
     c.execute(query, values)
 
     # Generic database closing
@@ -286,11 +277,7 @@ def swissPairings():
             pair = (pair2[0], pair2[1], pair1[0], pair1[1])
             result.append(pair)
 
-            # create the match
-
-            createPairing(pair1[0], pair2[0], roundnb)
-
-            i = i + 2
+            i += 2
 
         return result
 
@@ -301,27 +288,6 @@ def swissPairings():
 
 
 # Guillaume's own methods
-
-def createPairing(winner, loser, roundnb):
-    """ Creates a game pairing"""
-
-    # Generic database start
-    conn = connect()
-    c = conn.cursor()
-
-    tournament = getCurrentTournament(c)
-    # --  Main programm
-
-
-
-    query = 'INSERT INTO Matches values (%s, %s, %s, %s)'
-    values = (winner, loser, roundnb, tournament, )
-
-    c.execute(query, values)
-
-    # Generic database closing
-    conn.commit()
-    conn.close()
 
 
 def getMatchID(c, winner, loser):
